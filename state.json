@@ -1,0 +1,4 @@
+{
+"_comment": "This file cannot be deleted. The pimoroni version of micropython seems to depend on it or the wifi connection will not work."
+"run": "carbon_intensity"
+}
