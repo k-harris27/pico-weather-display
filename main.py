@@ -4,6 +4,8 @@ import time
 from urllib import urequest
 from ujson import load as json_load
 
+import numpy  # <-- TODO I would like this to fail since it won't exist on micropython
+
 from machine import Pin
 import inky_frame
 from picographics import \
@@ -25,7 +27,6 @@ def main():
         latitude = secrets.HOME_LATITUDE,
         longitude = secrets.HOME_LONGITUDE,
         )
-    print("Started")
     location = weather_json["location"]["name"]
     timeseries = weather_json["timeSeries"]
     
@@ -89,10 +90,9 @@ def retrieve_forecast(base_url, timesteps, latitude, longitude, request_headers 
     url = base_url + timesteps
     url = encode_url(url, params)
     
-    success = False
     retries = 5
+    jdata = {}
     
-    print(url)
     for _ in range(retries):
         socket = urequest.urlopen(
             url = url,
@@ -108,9 +108,8 @@ def retrieve_forecast(base_url, timesteps, latitude, longitude, request_headers 
             print("Connection error:")
             for k, v in jdata.items():
                 print(f"\t{k}: {v}")
-            print("TODO: Show error on screen")
-            import sys
-            sys.exit()
+            print("Retrying...\n")
+    return jdata
 
 def encode_url(base_url, params = {}):
     param_str = "&".join(f"{k}={v}" for k,v in params.items())
