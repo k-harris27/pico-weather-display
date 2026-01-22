@@ -112,6 +112,12 @@ def network_connect(SSID, PSK):
         stop_network_led()
         led_warn.on()
 
+        print("Network Error: ", end=None)
+        error_names = [n for n in network.__dict__.keys() if n[:5] == "STAT_"]
+        for error_name in error_names:
+            if wlan.status() == network.__dict__[error_name]:
+                print(error_name)
+
 
 state = {"run": None}
 app = None

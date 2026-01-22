@@ -5,7 +5,9 @@ from urllib import urequest
 from ujson import load as json_load
 
 from machine import Pin
+import network
 import inky_frame
+import inky_helper
 from picographics import \
      PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
 
@@ -19,6 +21,9 @@ import secrets
 GRAPHICS = PicoGraphics(DISPLAY)
 
 def main():
+
+    check_network_connection()
+
     weather_json = retrieve_forecast(
         BASE_URL,
         timesteps = "hourly",
@@ -34,6 +39,14 @@ def main():
     
     draw_weather(location, timeseries)
     
+def check_network_connection():
+    """
+    A network connection should be automatically started by the firmware when the pico starts.
+    It can fail for unexpected reasons (such as state.json not existing). In this case, we can connect manually.
+    """
+    wlan = network.WLAN(network.WLAN.IF_STA)
+    if not wlan.active():
+        inky_helper.network_connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
 
 def draw_weather(location, timeseries):
     GRAPHICS.set_pen(inky_frame.WHITE)
