@@ -12,5 +12,19 @@
     "python.analysis.extraPaths": [
         "~/.micropico-stubs/pimoroni-pico-stubs"
     ],
-    "micropico.softResetAfterUpload": true
+    "micropico.softResetAfterUpload": true,
+    "micropico.pyIgnore": [
+        "**/.picowgo",
+        "**/.micropico",
+        "**/.vscode",
+        "**/.gitignore",
+        "**/.git",
+        "**/.DS_Store",
+        "**/project.pico-go",
+        "**/env",
+        "**/venv",
+        "**/.venv",
+        "**/.idea",
+        "typings"
+    ]
 }

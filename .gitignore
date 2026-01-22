@@ -1,1 +1,4 @@
 secrets.py
+.venv/
+typings/
+!typings/urllib/

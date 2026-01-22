@@ -4,8 +4,6 @@ import time
 from urllib import urequest
 from ujson import load as json_load
 
-import numpy  # <-- TODO I would like this to fail since it won't exist on micropython
-
 from machine import Pin
 import inky_frame
 from picographics import \
