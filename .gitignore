@@ -2,3 +2,4 @@ secrets.py
 .venv/
 typings/
 !typings/urllib/
+bmp_all/
