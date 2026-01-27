@@ -12,7 +12,7 @@ def draw_weather(location, timeseries):
     GRAPHICS.set_pen(inky_frame.BLACK)
     GRAPHICS.set_font("bitmap8")
     
-    data_now = timeseries[0]
+    data_now = timeseries[1]
     weather_text = met_office.WEATHER_CODES[str(data_now["significantWeatherCode"])]
     temperature = int(float(data_now["screenTemperature"]))
     feels_like = int(float(data_now["feelsLikeTemperature"]))
