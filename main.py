@@ -27,7 +27,7 @@ def main():
     for k,v in daily_timeseries[1].items():
         print(f"{k}: {v}")
     
-    display.draw_weather(location, hourly_timeseries)
+    display.draw_weather(location, hourly_timeseries, daily_timeseries)
     
 def check_network_connection():
     """

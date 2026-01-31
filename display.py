@@ -4,6 +4,7 @@ from picographics import \
 
 import met_office
 import date
+import read_bmp
 
 TEXT_SCALE_LARGE = 8
 TEXT_SCALE_MEDIUM = 4
@@ -11,27 +12,17 @@ TEXT_SCALE_SMALL = 2
 
 GRAPHICS = PicoGraphics(DISPLAY)
 
-def draw_weather(location, timeseries):
+def draw_weather(location, hourly_timeseries, daily_timeseries):
     GRAPHICS.set_pen(inky_frame.WHITE)
     GRAPHICS.clear()
     GRAPHICS.set_pen(inky_frame.BLACK)
     GRAPHICS.set_font("bitmap8")
     
-    data_now = timeseries[1]
-    weather_text = met_office.WEATHER_CODES[str(data_now["significantWeatherCode"])]
-    temperature = int(float(data_now["screenTemperature"]))
-    feels_like = int(float(data_now["feelsLikeTemperature"]))
-    rain_chance = float(data_now["probOfPrecipitation"])
-    
-    _TEXT_SEP = 60
-    
-    GRAPHICS.text(f"Location: 		{location}", 0, 0, 600, 4)
-    GRAPHICS.text(f"Weather:  		{weather_text}", 0, _TEXT_SEP, 600, 4)
-    GRAPHICS.text(f"Temperature: 	{temperature}", 0, 2*_TEXT_SEP, 600, 4)
-    GRAPHICS.text(f"Feels Like: 	{feels_like}", 0, 3*_TEXT_SEP, 600, 4)
-    GRAPHICS.text(f"Chance of Rain: {rain_chance}", 0, 4*_TEXT_SEP, 600, 4)
+    data_today = daily_timeseries[1]  # First daily entry is yesterday
 
-    _draw_date(data_now["time"])
+    _draw_date(data_today["time"])
+
+    _draw_today_overview(data_today)
     
     GRAPHICS.update()
 
@@ -52,6 +43,39 @@ def _draw_date(time_str):
     _draw_text_right_justified(day_str, X_RIGHT_ANCHOR, 10, scale=TEXT_SCALE_LARGE)
     _draw_text_right_justified(date_str, X_RIGHT_ANCHOR, 20+8*TEXT_SCALE_LARGE, scale=TEXT_SCALE_MEDIUM)
 
+def _draw_today_overview(data_today):
+    """
+    Draw the overall data for today - numbers and large weather icon.
+    
+    :param data_today: Today's data json from the MET office daily timeseries.
+    """
+    
+    # TODO: Check if we are within sunrise/sunset to choose day/night versions?
+    _draw_weather_icon(data_today["daySignificantWeatherCode"], 20, 20)
+
+def _draw_weather_icon(weather_code, x, y):
+    """
+    Draw the bitmap icon corresponding to weather_code with the top left at (x,y) 
+    
+    :param weather_code: int MET office weather code (see met_office.py for values)
+    :param x: int x position of left side of icon
+    :param y: int y position of top side of icon
+    """
+
+    icon_name = met_office.WEATHER_CODE_ICONS[str(weather_code)]
+    icon_path = "/bmp/" + icon_name + ".bmp"
+    bmp_reader = read_bmp.gen_pixels(icon_path)
+    width, height = next(bmp_reader)  # First yield gives width and height. All others give pixel info.
+    y_lower_edge = y + height
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    print("WARNING: bitmap reading currently only supports drawn or transparent (alpha channel) since the display has just 7 colours.")
+    for n, pixel_data in enumerate(bmp_reader):
+        # Skip transparent pixels
+        if len(pixel_data) > 3 and pixel_data[3] == 0:
+            continue
+        pixel_x = x + n % width
+        pixel_y = y_lower_edge - n // width
+        GRAPHICS.rectangle(pixel_x, pixel_y, 1, 1)
 
 def _draw_text_right_justified(text, right_anchor, top_anchor, scale, spacing=1, fixed_width=False, **kwargs):
     """

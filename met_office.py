@@ -51,7 +51,6 @@ def encode_url(base_url, params = {}):
     param_str = "&".join(f"{k}={v}" for k,v in params.items())
     return base_url + "?" + param_str
 
-
 # --- Code definitions ---
 # https://www.metoffice.gov.uk/services/data/datapoint/code-definitions
 
@@ -74,7 +73,7 @@ WEATHER_CODES = {
     "14": "Heavy Rain Shower (Day)",
     "15": "Heavy Rain",
     "16": "Sleet Shower (Night)",
-    "17": "Sleep Shower (Day)",
+    "17": "Sleet Shower (Day)",
     "18": "Sleet",
     "19": "Hail Shower (Night)",
     "20": "Hail Shower (Day)",
@@ -89,6 +88,41 @@ WEATHER_CODES = {
     "29": "Thunder Shower (Day)",
     "30": "Thunder",
     }
+
+WEATHER_CODE_ICONS = {
+    "NA": None,
+    "-1": "wi-na",
+    "0" : "wi-night-clear",
+    "1" : "wi-day-sunny",
+    "2" : "wi-night-alt-partly-cloudy",
+    "3" : "wi-day-cloudy",
+    "5" : "wi-na",  # Can't see a Mist entry in weather icons
+    "6" : "wi-fog",
+    "7" : "wi-cloudy",
+    "8" : "wi-na",  # Can't see an Overcast entry in weather icons
+    "9" : "wi-night-alt-showers",
+    "10": "wi-day-showers",
+    "11": "wi-showers",  # Drizzle
+    "12": "wi-showers",  # Light rain
+    "13": "wi-night-alt-rain",
+    "14": "wi-day-rain",
+    "15": "wi-rain",
+    "16": "wi-night-alt-sleet",
+    "17": "wi-day-sleet",
+    "18": "wi-sleet",
+    "19": "wi-night-alt-hail",
+    "20": "wi-day-hail",
+    "21": "wi-hail",
+    "22": "wi-night-alt-snow",
+    "23": "wi-day-snow",
+    "24": "wi-snow",
+    "25": "wi-snowflake-cold",  # Heavy snow night
+    "26": "wi-snowflake-cold",  # Heavy snow day
+    "27": "wi-snowflake-cold",  # Heavy snow neutral
+    "28": "wi-night-alt-storm-showers",
+    "29": "wi-day-storm-showers",
+    "30": "wi-thunderstorm",
+}
 
 VIS_CODES = {
     "UN": "Unknown",
