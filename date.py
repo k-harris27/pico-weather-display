@@ -9,18 +9,34 @@ days_of_week = [
     "Friday",
     "Saturday",
 ]
+month_strings = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
 
-def day_of_week_from_time_str(time_str):
+def date_from_time_str(time_str):
     """
-    Return a string of the day of the week based on the standard time string (yyyy-mm-ddThh:mmZ)
+    Return the year, month and day extracted from the standard time string (yyyy-mm-ddThh:mmZ)
     
     :param time_str: str
+
+    :returns: tuple(int,int,int) of year, month, day.
     """
 
     year = int(time_str[:4])
     month = int(time_str[5:7])
     day = int(time_str[8:10])
-    return day_of_week_from_date(year, month, day)
+    return year, month, day
 
 def day_of_week_from_date(year, month, day):
     """
@@ -52,3 +68,11 @@ def day_of_week_from_date(year, month, day):
     day_str = days_of_week[day_of_week_int]
 
     return day_str
+
+def get_month_3str(month_int):
+    """
+    Return 3-character string representing month from given month number.
+    
+    :param month_int: int month number
+    """
+    return month_strings[month_int-1]
