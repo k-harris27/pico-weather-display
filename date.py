@@ -10,6 +10,18 @@ days_of_week = [
     "Saturday",
 ]
 
+def day_of_week_from_time_str(time_str):
+    """
+    Return a string of the day of the week based on the standard time string (yyyy-mm-ddThh:mmZ)
+    
+    :param time_str: str
+    """
+
+    year = int(time_str[:4])
+    month = int(time_str[5:7])
+    day = int(time_str[8:10])
+    return day_of_week_from_date(year, month, day)
+
 def day_of_week_from_date(year, month, day):
     """
     Return a string of the day of week based on numerical year, month and day of month.
@@ -35,4 +47,8 @@ def day_of_week_from_date(year, month, day):
         is_leap_year = (year % 400 == 0) or (year % 4 == 0 and not year % 100 == 0)
         leap_year_code -= int(is_leap_year)
 
-    day_of_week = (year_code + month_code + century_code + day - leap_year_code) % 7
+    day_of_week_int = (year_code + month_code + century_code + day - leap_year_code) % 7
+
+    day_str = days_of_week[day_of_week_int]
+
+    return day_str
