@@ -8,10 +8,11 @@ set -e
 mkdir -p bmp_all
 
 for f in svg/*.svg; do 
+	echo "Converting" $f
 	outf=$(basename $f)
 	outf=${outf/.svg/.bmp}
-	inkscape -w 100 -h 100 -o bmp/tmp.png $f && \
-	convert bmp/tmp.png bmp_all/$outf
+	inkscape -w 150 -h 150 -o tmp.png $f && \
+	convert -monochrome tmp.png bmp_all/$outf
 done
 
-rm bmp/tmp.png
+rm tmp.png

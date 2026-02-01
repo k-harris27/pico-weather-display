@@ -51,7 +51,7 @@ def _draw_today_overview(data_today):
     """
     
     # TODO: Check if we are within sunrise/sunset to choose day/night versions?
-    _draw_weather_icon(data_today["daySignificantWeatherCode"], 20, 20)
+    _draw_weather_icon(data_today["daySignificantWeatherCode"], 20, 0)
 
 def _draw_weather_icon(weather_code, x, y):
     """
@@ -67,12 +67,9 @@ def _draw_weather_icon(weather_code, x, y):
     bmp_reader = read_bmp.gen_pixels(icon_path)
     width, height = next(bmp_reader)  # First yield gives width and height. All others give pixel info.
     y_lower_edge = y + height
-    GRAPHICS.set_pen(inky_frame.BLACK)
-    print("WARNING: bitmap reading currently only supports drawn or transparent (alpha channel) since the display has just 7 colours.")
+    GRAPHICS.set_pen(inky_frame.BLUE)
     for n, pixel_data in enumerate(bmp_reader):
-        # Skip transparent pixels
-        if len(pixel_data) > 3 and pixel_data[3] == 0:
-            continue
+        if pixel_data: continue  # Currently only monochrome supported. Skip (transparent) if pixel not "black" (0).
         pixel_x = x + n % width
         pixel_y = y_lower_edge - n // width
         GRAPHICS.rectangle(pixel_x, pixel_y, 1, 1)
