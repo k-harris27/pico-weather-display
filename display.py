@@ -40,7 +40,9 @@ def _draw_date(time_str):
     month_str = date.get_month_3str(month)
     date_str = f"{year:04d} {month_str} {day:02d}"
 
+    GRAPHICS.set_pen(inky_frame.RED)
     _draw_text_right_justified(day_str, X_RIGHT_ANCHOR, 10, scale=TEXT_SCALE_LARGE)
+    GRAPHICS.set_pen(inky_frame.BLACK)
     _draw_text_right_justified(date_str, X_RIGHT_ANCHOR, 20+8*TEXT_SCALE_LARGE, scale=TEXT_SCALE_MEDIUM)
 
 def _draw_today_overview(data_today):
