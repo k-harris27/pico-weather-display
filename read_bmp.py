@@ -6,6 +6,16 @@ SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
+def draw(GRAPHICS, path, x, y):
+    bmp_reader = gen_pixels(path)
+    width, height = next(bmp_reader)  # First yield gives width and height. All others give pixel info.
+    y_lower_edge = y + height
+    for n, pixel_data in enumerate(bmp_reader):
+        if pixel_data: continue  # Currently only monochrome supported. Skip (transparent) if pixel not "black" (0).
+        pixel_x = x + n % width
+        pixel_y = y_lower_edge - n // width
+        GRAPHICS.pixel(pixel_x, pixel_y)
+
 def gen_pixels(path):
     """
     Return individual pixel values of a *monochrome* bitmap as a generator, in order from left to right, bottom to top.
