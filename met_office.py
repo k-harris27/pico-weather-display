@@ -96,10 +96,10 @@ WEATHER_CODE_ICONS = {
     "1" : "wi-day-sunny",
     "2" : "wi-night-alt-partly-cloudy",
     "3" : "wi-day-cloudy",
-    "5" : "wi-na",  # Can't see a Mist entry in weather icons
+    "5" : "wi-fog",  # Can't see a Mist entry in weather icons
     "6" : "wi-fog",
     "7" : "wi-cloudy",
-    "8" : "wi-na",  # Can't see an Overcast entry in weather icons
+    "8" : "wi-day-sunny-overcast",  # Can't see an Overcast entry in weather icons
     "9" : "wi-night-alt-showers",
     "10": "wi-day-showers",
     "11": "wi-showers",  # Drizzle
