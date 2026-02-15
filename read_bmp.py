@@ -1,10 +1,15 @@
 import gc
 import math
+import os
 
 # Seek modes for file IO. Not implemented by micropython os module.
 SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
+
+# Index of files in /bmp, so we can check if things we are asked to draw are actually there.
+BMP_INDEX = ["/bmp/" + file for file in os.listdir("/bmp")]
+BMP_NA = "/bmp/wi-na.bmp"
 
 def draw(GRAPHICS, path, x, y):
     bmp_reader = gen_pixels(path)
@@ -28,6 +33,12 @@ def gen_pixels(path):
     :param path: str Path to bitmap file
     """
 
+    if path[0] != "/":
+        path = "/" + path
+    if path not in BMP_INDEX:
+        print(f"Bitmap {path} was not found in /bmp!")
+        path = BMP_NA
+    
     with open(path, "rb") as bytes:
         pixel_start, width, height, bit_depth = _parse_header(bytes)
 
