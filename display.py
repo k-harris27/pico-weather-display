@@ -1,7 +1,13 @@
-import inky_frame
-from picographics import \
-    PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
-GRAPHICS = PicoGraphics(DISPLAY)
+try:
+    import inky_frame
+    from inky_frame import BLACK, WHITE, BLUE, RED, ORANGE, YELLOW, GREEN
+    from picographics import \
+        PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
+    GRAPHICS = PicoGraphics(DISPLAY)
+except ImportError:
+    from display_local import LocalDisplay as GRAPHICS
+    from display_local import BLACK, WHITE, BLUE, RED, ORANGE, YELLOW, GREEN
+
 
 import met_office
 import date
