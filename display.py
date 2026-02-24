@@ -3,6 +3,8 @@ from picographics import \
     PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
 GRAPHICS = PicoGraphics(DISPLAY)
 
+# TODO: Replace MET Office API with open weather to get sunrise, sunset and cloud coverage
+# https://openweathermap.org/api/one-call-3?collection=one_call_api_3.0&collection=one_call_api_3.0&collection=one_call_api_3.0#example
 import met_office
 import date
 import read_bmp
@@ -16,8 +18,9 @@ BIG_STATS_X_LEFT = 200
 BIG_STATS_Y_TOP  = 40
 BIG_STATS_X_SEP  = 160
 BIG_STATS_Y_SEP  = 90
-BIG_STATS_ICON_Y = 10
+BIG_STATS_ICON_Y = 0
 BIG_STATS_ICON_WIDTH = 50
+BIG_STATS_UNITS_OFFSET = 3
 
 def draw_weather(location, hourly_timeseries, daily_timeseries):
     GRAPHICS.set_pen(inky_frame.WHITE)
@@ -74,7 +77,7 @@ def _draw_today_overview(data_today):
     max_temp_str = f"{max_temp:02d}"
     feels_like_str = f"{feels_like:02d}"
     max_temp_text_x = BIG_STATS_X_LEFT+BIG_STATS_ICON_WIDTH
-    max_temp_text_x_right = max_temp_text_x + GRAPHICS.measure_text(max_temp_str, TEXT_SCALE_LARGE)
+    max_temp_text_x_right = max_temp_text_x + GRAPHICS.measure_text(max_temp_str, TEXT_SCALE_LARGE) + BIG_STATS_UNITS_OFFSET
     GRAPHICS.text(max_temp_str,
                   max_temp_text_x, BIG_STATS_Y_TOP,
                   scale=TEXT_SCALE_LARGE)
@@ -82,7 +85,7 @@ def _draw_today_overview(data_today):
                   max_temp_text_x_right, BIG_STATS_Y_TOP, 
                   scale=TEXT_SCALE_MEDIUM)
     GRAPHICS.text(f"Feels like {feels_like_str}°C", 
-                  max_temp_text_x, BIG_STATS_Y_TOP+TEXT_SCALE_LARGE*TEXT_SIZE_Y, 
+                  BIG_STATS_X_LEFT, BIG_STATS_Y_TOP+TEXT_SCALE_LARGE*TEXT_SIZE_Y, 
                   scale=TEXT_SCALE_SMALL)
 
 
@@ -90,10 +93,10 @@ def _draw_today_overview(data_today):
     column_2_x = BIG_STATS_X_LEFT+BIG_STATS_X_SEP
     GRAPHICS.set_pen(inky_frame.BLACK)
     read_bmp.draw(GRAPHICS, "bmp/wi-umbrella_50x50.bmp", column_2_x, BIG_STATS_Y_TOP+BIG_STATS_ICON_Y)
-    rain_chance = data_today["dayProbabilityOfRain"]
+    rain_chance = f"{data_today["dayProbabilityOfRain"]:02d}"
     rain_chance_text_x = column_2_x + BIG_STATS_ICON_WIDTH
-    rain_chance_units_x = rain_chance_text_x + GRAPHICS.measure_text(str(rain_chance), TEXT_SCALE_LARGE)
-    GRAPHICS.text(str(rain_chance),
+    rain_chance_units_x = rain_chance_text_x + GRAPHICS.measure_text(rain_chance, TEXT_SCALE_LARGE) + BIG_STATS_UNITS_OFFSET
+    GRAPHICS.text(rain_chance,
                   rain_chance_text_x, BIG_STATS_Y_TOP,
                   scale=TEXT_SCALE_LARGE)
     GRAPHICS.text("%",
@@ -105,10 +108,10 @@ def _draw_today_overview(data_today):
     row_2_y_top = BIG_STATS_Y_TOP+BIG_STATS_Y_SEP
     GRAPHICS.set_pen(inky_frame.BLACK)
     read_bmp.draw(GRAPHICS, "bmp/wi-strong-wind_50x50.bmp", BIG_STATS_X_LEFT, row_2_y_top+BIG_STATS_ICON_Y)
-    wind_speed = data_today["midday10MWindSpeed"]
+    wind_speed = f"{round(data_today["midday10MWindSpeed"]):02d}"
     wind_speed_text_x = BIG_STATS_X_LEFT+BIG_STATS_ICON_WIDTH
-    wind_speed_units_x = wind_speed_text_x+GRAPHICS.measure_text(str(wind_speed), TEXT_SCALE_LARGE)
-    GRAPHICS.text(str(wind_speed),
+    wind_speed_units_x = wind_speed_text_x+GRAPHICS.measure_text(wind_speed, TEXT_SCALE_LARGE) + BIG_STATS_UNITS_OFFSET
+    GRAPHICS.text(wind_speed,
                   wind_speed_text_x, row_2_y_top,
                   scale=TEXT_SCALE_LARGE)
     GRAPHICS.text("mph",
@@ -117,6 +120,10 @@ def _draw_today_overview(data_today):
     
     ## TODO: Arrow for direction of wind speed
     
+    # --- Pollen ---
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    read_bmp.draw(GRAPHICS, "bmp/flower_50x50.bmp", column_2_x, row_2_y_top+BIG_STATS_ICON_Y)
+    pollen = 
 
 def _draw_weather_icon(weather_code, x, y):
     """
