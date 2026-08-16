@@ -1,6 +1,6 @@
 import network
 
-import met_office
+import open_meteo
 import display
 import inky_helper
 
@@ -8,26 +8,9 @@ def main():
 
     check_network_connection()
 
-    hourly_json = met_office.retrieve_forecast(
-        timesteps = "hourly",
-        )
-    location = hourly_json["location"]["name"]
-    hourly_timeseries = hourly_json["timeSeries"]
+    json = open_meteo.retrieve_forecast()
 
-    daily_json = met_office.retrieve_forecast(
-        timesteps = "daily",
-    )
-    daily_timeseries = daily_json["timeSeries"]
-    
-    print("Debug Hourly:")
-    for k,v in hourly_timeseries[0].items():
-        print(f"{k}: {v}")
-
-    print("Debug Daily:")
-    for k,v in daily_timeseries[1].items():
-        print(f"{k}: {v}")
-    
-    display.draw_weather(location, hourly_timeseries, daily_timeseries)
+    display.draw_weather(json)
     
 def check_network_connection():
     """
