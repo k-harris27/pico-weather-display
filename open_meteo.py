@@ -7,10 +7,10 @@ import secrets
 BASE_URL = f"https://api.open-meteo.com/v1/forecast?latitude={secrets.HOME_LATITUDE}&longitude={secrets.HOME_LONGITUDE}"+\
             "&daily=weather_code,temperature_2m_max,apparent_temperature_max,uv_index_max,sunrise,sunset,precipitation_probability_max,wind_speed_10m_max"+\
             "&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers"+\
-            "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,cloud_cover,precipitation,rain,showers,snowfall&timezone=auto"+\
-            "&timeformat=unixtime&wind_speed_unit=mph&forecast_hours=24"
+            "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,cloud_cover,precipitation,rain,showers,snowfall"+\
+            "&timeformat=unixtime&wind_speed_unit=mph&forecast_hours=24&timezone=Europe%2FLondon"
 AIR_QUALITY_URL = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={secrets.HOME_LATITUDE}&longitude={secrets.HOME_LONGITUDE}"+\
-                   "&current=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto"
+                   "&current=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=Europe%2FLondon"
 
 def retrieve_forecast():
     weather_json = _retrieve_weather()
@@ -70,13 +70,13 @@ def pollen_counts_to_rating(pollen_counts):
     """
     max_count = max(pollen_counts)
     if max_count < 30:
-        return "Low"
+        return "Lo"
     elif max_count < 50:
-        return "Med"
+        return "Md"
     elif max_count < 150:
         return "Hi"
     else:
-        return "VHi"
+        return "Ex"
 
 # --- Code Definitions ---
 WEATHER_CODES = {

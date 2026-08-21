@@ -11,14 +11,21 @@ SEEK_END = 2
 BMP_INDEX = ["/bmp/" + file for file in os.listdir("/bmp")]
 BMP_NA = "/bmp/wi-na.bmp"
 
-def draw(GRAPHICS, path, x, y):
+def draw(GRAPHICS, path, x, y, draw_every=1):
     bmp_reader = gen_pixels(path)
     width, height = next(bmp_reader)  # First yield gives width and height. All others give pixel info.
-    y_lower_edge = y + height
+    y_lower_edge = (y + height // draw_every)
     for n, pixel_data in enumerate(bmp_reader):
         if pixel_data: continue  # Currently only monochrome supported. Skip (transparent) if pixel not "black" (0).
-        pixel_x = x + n % width
-        pixel_y = y_lower_edge - n // width
+        local_x = n % width
+        local_y = n // width
+        # Very crude way to reduce image scale
+        if local_x % draw_every != 0 or local_y % draw_every != 0:
+            continue
+        local_x = local_x // draw_every
+        local_y = local_y // draw_every
+        pixel_x = x + local_x
+        pixel_y = y_lower_edge - local_y
         GRAPHICS.pixel(pixel_x, pixel_y)
 
 def gen_pixels(path):

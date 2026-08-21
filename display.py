@@ -3,8 +3,10 @@ from picographics import \
     PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
 GRAPHICS = PicoGraphics(DISPLAY)
 
-import open_meteo as weather_api
+import math
 import time
+
+import open_meteo as weather_api
 import date
 import read_bmp
 
@@ -15,11 +17,21 @@ TEXT_SIZE_Y = 8
 
 BIG_STATS_X_LEFT = 200
 BIG_STATS_Y_TOP  = 20
-BIG_STATS_X_SEP  = 160
+BIG_STATS_X_SEP  = 175
 BIG_STATS_Y_SEP  = 110
 BIG_STATS_ICON_Y = 0
 BIG_STATS_ICON_WIDTH = 50
 BIG_STATS_UNITS_OFFSET = 3
+
+WEEK_STATS_X_LEFT = 20
+WEEK_STATS_Y_TOP  = 155
+WEEK_STATS_Y_SEP  = 55
+WEEK_STATS_ICON_SHRINK_SCALE = 3
+WEEK_STATS_ICON_WIDTH = 150 // WEEK_STATS_ICON_SHRINK_SCALE
+WEEK_STATS_ICON_Y_OFFSET = (WEEK_STATS_ICON_WIDTH - (TEXT_SCALE_MEDIUM*TEXT_SIZE_Y)) // 2
+
+GRAPH_THICKNESS = 3
+GRAPH_Y_TOP = BIG_STATS_Y_TOP + 2*BIG_STATS_Y_SEP -30
 
 def draw_weather(json):
     GRAPHICS.set_pen(inky_frame.WHITE)
@@ -27,9 +39,15 @@ def draw_weather(json):
     GRAPHICS.set_pen(inky_frame.BLACK)
     GRAPHICS.set_font("bitmap8")
 
-    _draw_date(json["current"]["time"])
+    _draw_date(json["current"]["time"] + json["utc_offset_seconds"])
 
     _draw_today_overview(json)
+
+    _draw_week_overview(json)
+
+    _draw_today_graph(json)
+
+    _draw_last_updated(json)
     
     GRAPHICS.update()
 
@@ -128,13 +146,12 @@ def _draw_today_overview(json):
     GRAPHICS.set_pen(inky_frame.BLACK)
     read_bmp.draw(GRAPHICS, "bmp/flower_50x50.bmp", column_2_x, row_2_y_top+BIG_STATS_ICON_Y)
     pollen = weather_api.pollen_counts_to_rating([count for key, count in data_current["pollen"].items() if key.endswith("_pollen")])
-    print([count for key, count in data_current["pollen"].items() if key.endswith("_pollen")])
     GRAPHICS.text(pollen,
                   column_2_x + BIG_STATS_ICON_WIDTH, row_2_y_top,
                   scale=TEXT_SCALE_LARGE)
 
     # --- UV Index ---
-    pollen_extra_x = 30
+    pollen_extra_x = -20
     column_3_x = column_2_x+BIG_STATS_X_SEP+pollen_extra_x
     GRAPHICS.set_pen(inky_frame.BLACK)
     read_bmp.draw(GRAPHICS, "bmp/wi-hot_50x50.bmp", column_3_x, row_2_y_top+BIG_STATS_ICON_Y)
@@ -144,7 +161,7 @@ def _draw_today_overview(json):
                   scale=TEXT_SCALE_LARGE)
 
     # --- Sunrise/Sunset ---
-    uv_index_extra_x = -40
+    uv_index_extra_x = -60
     column_4_x = column_3_x+BIG_STATS_X_SEP + uv_index_extra_x
     sunrise_y = row_2_y_top+BIG_STATS_ICON_Y-int(BIG_STATS_ICON_WIDTH//2.5)
     sunset_y = row_2_y_top+BIG_STATS_ICON_Y+int(BIG_STATS_ICON_WIDTH//2.5)
@@ -152,11 +169,11 @@ def _draw_today_overview(json):
     GRAPHICS.set_pen(inky_frame.BLACK)
     read_bmp.draw(GRAPHICS, "bmp/wi-sunrise_50x50.bmp", column_4_x, sunrise_y)
     read_bmp.draw(GRAPHICS, "bmp/wi-sunset_50x50.bmp", column_4_x, sunset_y)
-    sunrise_time = time.localtime(data_today["sunrise"])
+    sunrise_time = time.localtime(data_today["sunrise"] + json["utc_offset_seconds"])
     sunrise_hour = f"{sunrise_time[3]:02d}"
     sunrise_minute = f":{sunrise_time[4]:02d}"
     sunrise_hour_width = GRAPHICS.measure_text(sunrise_hour, scale=TEXT_SCALE_MEDIUM)+5
-    sunset_time = time.localtime(data_today["sunset"])
+    sunset_time = time.localtime(data_today["sunset"] + json["utc_offset_seconds"])
     sunset_hour = f"{sunset_time[3]:02d}"
     sunset_minute = f":{sunset_time[4]:02d}"
     sunset_hour_width = GRAPHICS.measure_text(sunset_hour, scale=TEXT_SCALE_MEDIUM)+5
@@ -172,8 +189,139 @@ def _draw_today_overview(json):
     GRAPHICS.text(sunset_minute,
                   column_4_x + BIG_STATS_ICON_WIDTH + sunset_hour_width, sunset_y + text_offset_y,
                   scale=TEXT_SCALE_SMALL)
+
+def _draw_week_overview(json):
+    """
+    Draw the overall data for the week - small weather icons and numbers.
     
-def _draw_weather_icon(weather_code, x, y):
+    :param json: weather json from the API.
+    """
+
+    for day_index in range(1, 7):
+        data_day = {key: timeseries[day_index] for key, timeseries in json["daily"].items()}
+        x = WEEK_STATS_X_LEFT
+        y = WEEK_STATS_Y_TOP + (day_index-1)*WEEK_STATS_Y_SEP
+        day = time.localtime(data_day["time"] + json["utc_offset_seconds"])[6]
+        day_3str = date.days_of_week[(day+1)%7][:3]
+        day_3str_width = 60
+        GRAPHICS.set_pen(inky_frame.BLACK)
+        GRAPHICS.text(day_3str, x, y, scale=TEXT_SCALE_MEDIUM)
+        icon_x = x + day_3str_width + 10
+        _draw_weather_icon(data_day["weather_code"], icon_x, y-WEEK_STATS_ICON_Y_OFFSET, shrink_factor=3)
+        GRAPHICS.set_pen(inky_frame.BLACK)
+        max_temp = round(data_day["temperature_2m_max"])
+        GRAPHICS.text(f"{max_temp:02d}°C",
+                      icon_x+WEEK_STATS_ICON_WIDTH+10, y,
+                      scale=TEXT_SCALE_SMALL)
+        GRAPHICS.text(f"{round(data_day["precipitation_probability_max"]):02d}%",
+                        icon_x+WEEK_STATS_ICON_WIDTH+10, y+TEXT_SCALE_SMALL*TEXT_SIZE_Y+5,
+                        scale=TEXT_SCALE_SMALL)
+
+
+def _draw_today_graph(json):
+    """
+    Draw the graph of today's temperature and precipitation.
+    
+    :param json: weather json from the API.
+    """
+
+    data_hourly = json["hourly"]
+
+    _hours = [time.localtime(t + json["utc_offset_seconds"])[3] for t in data_hourly["time"]]
+    _temps = [t for t in data_hourly["temperature_2m"]]
+    _rains = [p for p in data_hourly["precipitation_probability"]]
+
+    # --- x axis ---
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    x_axis_y = GRAPHICS.get_bounds()[1] - 50
+    x_axis_x_min = BIG_STATS_X_LEFT + 30
+    x_axis_x_max = GRAPHICS.get_bounds()[0] - 50
+    x_axis_width = x_axis_x_max - x_axis_x_min
+    x_axis_step = float(x_axis_width) / (len(_hours)-1)
+    x_axis_positions = [int(x_axis_x_min + i*x_axis_step) for i in range(len(_hours))]
+    small_text_height = TEXT_SIZE_Y * TEXT_SCALE_SMALL
+
+    # --- Draw x axis and hour labels ---
+    GRAPHICS.line(x_axis_x_min, x_axis_y, x_axis_x_max, x_axis_y, GRAPH_THICKNESS)
+    for i, hour in enumerate(_hours):
+        hour_str = f"{hour:02d}"
+        hour_text_width = GRAPHICS.measure_text(hour_str, scale=TEXT_SCALE_SMALL)
+        hour_x = x_axis_positions[i] - hour_text_width // 2
+        GRAPHICS.text(hour_str, hour_x, x_axis_y + 5, scale=TEXT_SCALE_SMALL)
+
+    # --- y axes ---
+
+    y_axis_x = x_axis_x_min
+    y_axis_y_min = GRAPH_Y_TOP
+    y_axis_y_max = x_axis_y
+    y_axis_height = y_axis_y_max - y_axis_y_min
+
+    # --- left y axis: temperature ---
+    GRAPHICS.set_pen(inky_frame.RED)
+    temp_min = math.floor(min(_temps) / 5) * 5
+    temp_max = math.ceil(max(_temps) / 5) * 5
+    temp_range = temp_max - temp_min
+    temp_step = (temp_range // 5) or 1
+    def temp_to_y(t):
+        return int(y_axis_y_min + (temp_max - t) / temp_range * y_axis_height)
+    GRAPHICS.line(y_axis_x, y_axis_y_min, y_axis_x, y_axis_y_max, GRAPH_THICKNESS)
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    for t in range(temp_min, temp_max + 1, temp_step):
+        y_pos = temp_to_y(t)
+        GRAPHICS.line(y_axis_x - 5, y_pos, y_axis_x + 5, y_pos, 1)
+        temp_str = f"{t:02d}°"
+        temp_text_width = GRAPHICS.measure_text(temp_str, scale=TEXT_SCALE_SMALL)
+        GRAPHICS.text(temp_str, y_axis_x - 10 - temp_text_width, y_pos - small_text_height // 2, scale=TEXT_SCALE_SMALL)
+
+    GRAPHICS.set_pen(inky_frame.RED)
+    for i, pair in enumerate(zip(_temps[:-1], _temps[1:])):
+        x1 = x_axis_positions[i]
+        x2 = x_axis_positions[i+1]
+        y1 = temp_to_y(pair[0])
+        y2 = temp_to_y(pair[1])
+        GRAPHICS.line(x1, y1, x2, y2, 2)
+
+    # --- right y axis: precipitation ---
+    GRAPHICS.set_pen(inky_frame.BLUE)
+    rain_min = 0
+    rain_max = 100
+    rain_range = rain_max - rain_min
+    rain_step = (rain_range // 5) or 1
+    def rain_to_y(p):
+        return int(y_axis_y_min + (rain_max - p) / rain_range * y_axis_height)
+    GRAPHICS.line(x_axis_x_max, y_axis_y_min, x_axis_x_max, y_axis_y_max, GRAPH_THICKNESS)
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    for p in range(rain_min, rain_max + 1, rain_step):
+        y_pos = rain_to_y(p)
+        GRAPHICS.line(x_axis_x_max - 5, y_pos, x_axis_x_max + 5, y_pos, 1)
+        rain_str = f"{p:02d}%"
+        GRAPHICS.text(rain_str, x_axis_x_max + 10, y_pos - small_text_height // 2, scale=TEXT_SCALE_SMALL)
+
+    
+    GRAPHICS.set_pen(inky_frame.BLUE)
+    for i, pair in enumerate(zip(_rains[:-1], _rains[1:])):
+        x1 = x_axis_positions[i]
+        x2 = x_axis_positions[i+1]
+        y1 = rain_to_y(pair[0])
+        y2 = rain_to_y(pair[1])
+        GRAPHICS.line(x1, y1, x2, y2, 2)
+
+def _draw_last_updated(json):
+    """
+    Draw the last updated time in the bottom right corner.
+    
+    :param json: weather json from the API.
+    """
+
+    last_updated_time = time.localtime(json["current"]["time"] + json["utc_offset_seconds"])
+    last_updated_str = f"Last updated: {last_updated_time[3]:02d}:{last_updated_time[4]:02d}"
+    last_updated_text_width = GRAPHICS.measure_text(last_updated_str, scale=1)
+    last_updated_x = _x_from_right(3) - last_updated_text_width
+    last_updated_y = _y_from_bottom(3 + TEXT_SIZE_Y * TEXT_SCALE_SMALL)
+    GRAPHICS.set_pen(inky_frame.BLACK)
+    GRAPHICS.text(last_updated_str, last_updated_x, last_updated_y, scale=1)
+
+def _draw_weather_icon(weather_code, x, y, shrink_factor=1):
     """
     Draw the bitmap icon corresponding to weather_code with the top left at (x,y) 
     
@@ -185,7 +333,7 @@ def _draw_weather_icon(weather_code, x, y):
     icon_name = weather_api.WEATHER_CODE_ICONS[str(weather_code)]
     icon_path = "/bmp/" + icon_name + ".bmp"
     GRAPHICS.set_pen(inky_frame.BLUE)
-    read_bmp.draw(GRAPHICS, icon_path, x, y)
+    read_bmp.draw(GRAPHICS, icon_path, x, y, draw_every=shrink_factor)
 
 def _draw_text_right_justified(text, right_anchor, top_anchor, scale, spacing=1, fixed_width=False, **kwargs):
     """

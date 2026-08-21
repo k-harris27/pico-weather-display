@@ -1,4 +1,5 @@
 import network
+import time
 
 import open_meteo
 import display
@@ -6,11 +7,22 @@ import inky_helper
 
 def main():
 
-    check_network_connection()
+    while True:
+        try:
+            check_network_connection()
 
-    json = open_meteo.retrieve_forecast()
+            json = open_meteo.retrieve_forecast()
 
-    display.draw_weather(json)
+            display.draw_weather(json)
+
+            time.sleep(30 * 60)
+
+        except KeyboardInterrupt: raise
+        except SystemExit: raise
+        
+        except Exception:
+
+            time.sleep(10)
     
 def check_network_connection():
     """
